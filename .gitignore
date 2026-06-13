@@ -1,0 +1,23 @@
+# Build output
+target/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Local application overrides
+src/main/resources/application-local-secret.yml
