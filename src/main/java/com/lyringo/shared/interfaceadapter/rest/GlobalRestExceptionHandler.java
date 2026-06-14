@@ -17,29 +17,33 @@ public class GlobalRestExceptionHandler {
 
   @ExceptionHandler(InvalidCredentialsException.class)
   public ResponseEntity<ApiErrorResponse> handleInvalidCredentials(
-    InvalidCredentialsException exception) {
+      InvalidCredentialsException exception) {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-      .body(ApiErrorResponse.of("INVALID_CREDENTIALS", exception.getMessage()));
+        .body(ApiErrorResponse.of("INVALID_CREDENTIALS", exception.getMessage()));
   }
 
   @ExceptionHandler(UserNotFoundException.class)
   public ResponseEntity<ApiErrorResponse> handleUserNotFound(UserNotFoundException exception) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
-      .body(ApiErrorResponse.of("USER_NOT_FOUND", exception.getMessage()));
+        .body(ApiErrorResponse.of("USER_NOT_FOUND", exception.getMessage()));
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<ApiErrorResponse> handleIllegalArgument(IllegalArgumentException exception) {
+  public ResponseEntity<ApiErrorResponse> handleIllegalArgument(
+      IllegalArgumentException exception) {
     HttpStatus status =
-      exception.getMessage() != null && exception.getMessage().toLowerCase().contains("already used")
-        ? HttpStatus.CONFLICT
-        : HttpStatus.BAD_REQUEST;
+        exception.getMessage() != null
+                && exception.getMessage().toLowerCase().contains("already used")
+            ? HttpStatus.CONFLICT
+            : HttpStatus.BAD_REQUEST;
 
-    return ResponseEntity.status(status).body(ApiErrorResponse.of("BAD_REQUEST", exception.getMessage()));
+    return ResponseEntity.status(status)
+        .body(ApiErrorResponse.of("BAD_REQUEST", exception.getMessage()));
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ApiErrorResponse> handleValidation(MethodArgumentNotValidException exception) {
+  public ResponseEntity<ApiErrorResponse> handleValidation(
+      MethodArgumentNotValidException exception) {
     Map<String, String> details = new HashMap<>();
 
     for (FieldError error : exception.getBindingResult().getFieldErrors()) {
@@ -47,12 +51,13 @@ public class GlobalRestExceptionHandler {
     }
 
     return ResponseEntity.badRequest()
-      .body(ApiErrorResponse.of("VALIDATION_ERROR", "Request validation failed", details));
+        .body(ApiErrorResponse.of("VALIDATION_ERROR", "Request validation failed", details));
   }
+
   @ExceptionHandler(InvalidRefreshTokenException.class)
   public ResponseEntity<ApiErrorResponse> handleInvalidRefreshToken(
-    InvalidRefreshTokenException exception) {
+      InvalidRefreshTokenException exception) {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-      .body(ApiErrorResponse.of("INVALID_REFRESH_TOKEN", exception.getMessage()));
+        .body(ApiErrorResponse.of("INVALID_REFRESH_TOKEN", exception.getMessage()));
   }
 }

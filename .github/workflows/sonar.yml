@@ -14,6 +14,8 @@ jobs:
   sonar:
     name: Sonar Analysis
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
       - name: Checkout source code
@@ -28,11 +30,13 @@ jobs:
           java-version: '21'
           cache: maven
 
-      - name: Build, test, and analyze
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Build and test
+        run: mvn -B clean verify
+
+      - name: Sonar analysis
+        if: env.SONAR_TOKEN != ''
         run: |
-          mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=lyringo_lyringo-backend \
-            -Dsonar.organization=lyringo \
+          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=NgocHung11_lyringo-backend \
+            -Dsonar.organization=ngochung11 \
             -Dsonar.host.url=https://sonarcloud.io

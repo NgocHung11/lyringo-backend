@@ -21,10 +21,10 @@ public class RefreshTokenUseCase {
   private final UserReader userReader;
 
   public RefreshTokenUseCase(
-    AuthSessionRepository authSessionRepository,
-    RefreshTokenHasher refreshTokenHasher,
-    TokenProvider tokenProvider,
-    UserReader userReader) {
+      AuthSessionRepository authSessionRepository,
+      RefreshTokenHasher refreshTokenHasher,
+      TokenProvider tokenProvider,
+      UserReader userReader) {
     this.authSessionRepository = authSessionRepository;
     this.refreshTokenHasher = refreshTokenHasher;
     this.tokenProvider = tokenProvider;
@@ -39,9 +39,9 @@ public class RefreshTokenUseCase {
     String refreshTokenHash = refreshTokenHasher.hash(command.refreshToken());
 
     AuthSession session =
-      authSessionRepository
-        .findByRefreshTokenHash(refreshTokenHash)
-        .orElseThrow(InvalidRefreshTokenException::new);
+        authSessionRepository
+            .findByRefreshTokenHash(refreshTokenHash)
+            .orElseThrow(InvalidRefreshTokenException::new);
 
     if (!session.isActive(Instant.now())) {
       throw new InvalidRefreshTokenException();
@@ -60,16 +60,16 @@ public class RefreshTokenUseCase {
     CreatedUser user = userReader.getUserById(session.userId());
 
     return new AuthResult(
-      toAuthenticatedUser(user), tokenPair.accessToken(), tokenPair.refreshToken());
+        toAuthenticatedUser(user), tokenPair.accessToken(), tokenPair.refreshToken());
   }
 
   private AuthenticatedUserDto toAuthenticatedUser(CreatedUser user) {
     return new AuthenticatedUserDto(
-      user.id(),
-      user.email(),
-      user.username(),
-      user.displayName(),
-      user.avatarUrl(),
-      user.role());
+        user.id(),
+        user.email(),
+        user.username(),
+        user.displayName(),
+        user.avatarUrl(),
+        user.role());
   }
 }

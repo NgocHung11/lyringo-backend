@@ -29,8 +29,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(
-    HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-    throws ServletException, IOException {
+      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      throws ServletException, IOException {
     String accessToken = extractBearerToken(request);
 
     if (accessToken == null) {
@@ -42,10 +42,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       AccessTokenPayload payload = accessTokenVerifier.verify(accessToken);
 
       AuthenticatedUserPrincipal principal =
-        new AuthenticatedUserPrincipal(payload.userId(), payload.sessionId(), payload.tokenId());
+          new AuthenticatedUserPrincipal(payload.userId(), payload.sessionId(), payload.tokenId());
 
       UsernamePasswordAuthenticationToken authentication =
-        new UsernamePasswordAuthenticationToken(principal, null, List.of());
+          new UsernamePasswordAuthenticationToken(principal, null, List.of());
 
       SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -77,11 +77,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response
-      .getWriter()
-      .write(
-        """
-        {"code":"UNAUTHORIZED","message":"%s","details":{}}
-        """
-          .formatted(message));
+        .getWriter()
+        .write(
+            """
+            {"code":"UNAUTHORIZED","message":"%s","details":{}}
+            """
+                .formatted(message));
   }
 }

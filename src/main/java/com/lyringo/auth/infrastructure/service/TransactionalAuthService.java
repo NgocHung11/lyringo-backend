@@ -18,9 +18,9 @@ public class TransactionalAuthService {
   private final RefreshTokenUseCase refreshTokenUseCase;
 
   public TransactionalAuthService(
-    RegisterUseCase registerUseCase,
-    LoginUseCase loginUseCase,
-    RefreshTokenUseCase refreshTokenUseCase) {
+      RegisterUseCase registerUseCase,
+      LoginUseCase loginUseCase,
+      RefreshTokenUseCase refreshTokenUseCase) {
     this.registerUseCase = registerUseCase;
     this.loginUseCase = loginUseCase;
     this.refreshTokenUseCase = refreshTokenUseCase;

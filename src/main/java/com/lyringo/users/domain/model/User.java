@@ -12,7 +12,7 @@ public class User {
   private String displayName;
   private String avatarUrl;
   private UserStatus status;
-  private  final UserRole role;
+  private final UserRole role;
   private final Instant createdAt;
   private Instant updatedAt;
 

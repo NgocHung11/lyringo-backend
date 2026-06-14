@@ -3,7 +3,6 @@ package com.lyringo.users.infrastructure.persistence.jpa;
 import com.lyringo.users.domain.model.UserRole;
 import com.lyringo.users.domain.model.UserStatus;
 import jakarta.persistence.*;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -43,15 +42,15 @@ public class UserJpaEntity {
   protected UserJpaEntity() {}
 
   public UserJpaEntity(
-    UUID id,
-    String email,
-    String username,
-    String displayName,
-    String avatarUrl,
-    UserStatus status,
-    UserRole role,
-    Instant createdAt,
-    Instant updatedAt) {
+      UUID id,
+      String email,
+      String username,
+      String displayName,
+      String avatarUrl,
+      UserStatus status,
+      UserRole role,
+      Instant createdAt,
+      Instant updatedAt) {
     this.id = id;
     this.email = email;
     this.username = username;

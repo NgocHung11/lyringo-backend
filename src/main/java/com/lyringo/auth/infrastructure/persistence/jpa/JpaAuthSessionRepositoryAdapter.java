@@ -12,7 +12,7 @@ public class JpaAuthSessionRepositoryAdapter implements AuthSessionRepository {
   private final SpringDataAuthSessionRepository springDataAuthSessionRepository;
 
   public JpaAuthSessionRepositoryAdapter(
-    SpringDataAuthSessionRepository springDataAuthSessionRepository) {
+      SpringDataAuthSessionRepository springDataAuthSessionRepository) {
     this.springDataAuthSessionRepository = springDataAuthSessionRepository;
   }
 
@@ -31,7 +31,7 @@ public class JpaAuthSessionRepositoryAdapter implements AuthSessionRepository {
   @Override
   public Optional<AuthSession> findByRefreshTokenHash(String refreshTokenHash) {
     return springDataAuthSessionRepository
-      .findByRefreshTokenHash(refreshTokenHash)
-      .map(AuthSessionJpaMapper::toDomain);
+        .findByRefreshTokenHash(refreshTokenHash)
+        .map(AuthSessionJpaMapper::toDomain);
   }
 }

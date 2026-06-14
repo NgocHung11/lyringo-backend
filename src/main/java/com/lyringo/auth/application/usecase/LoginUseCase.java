@@ -27,12 +27,12 @@ public class LoginUseCase {
   private final UserReader userReader;
 
   public LoginUseCase(
-    AuthIdentityRepository authIdentityRepository,
-    AuthSessionRepository authSessionRepository,
-    PasswordHasher passwordHasher,
-    RefreshTokenHasher refreshTokenHasher,
-    TokenProvider tokenProvider,
-    UserReader userReader) {
+      AuthIdentityRepository authIdentityRepository,
+      AuthSessionRepository authSessionRepository,
+      PasswordHasher passwordHasher,
+      RefreshTokenHasher refreshTokenHasher,
+      TokenProvider tokenProvider,
+      UserReader userReader) {
     this.authIdentityRepository = authIdentityRepository;
     this.authSessionRepository = authSessionRepository;
     this.passwordHasher = passwordHasher;
@@ -44,20 +44,20 @@ public class LoginUseCase {
   public AuthResult execute(LoginCommand command) {
     Email email = new Email(command.email());
     AuthIdentity identity =
-      authIdentityRepository
-        .findEmailPasswordIdentityByEmail(email)
-        .orElseThrow(InvalidCredentialsException::new);
+        authIdentityRepository
+            .findEmailPasswordIdentityByEmail(email)
+            .orElseThrow(InvalidCredentialsException::new);
 
     if (!passwordHasher.matches(command.password(), identity.passwordHash())) {
       throw new InvalidCredentialsException();
     }
 
     AuthSession session =
-      AuthSession.create(
-        identity.userId(),
-        command.userAgent(),
-        command.ipAddress(),
-        Instant.now().plus(Duration.ofDays(30)));
+        AuthSession.create(
+            identity.userId(),
+            command.userAgent(),
+            command.ipAddress(),
+            Instant.now().plus(Duration.ofDays(30)));
     authSessionRepository.save(session);
 
     TokenPair tokenPair = tokenProvider.issueTokens(identity.userId(), session.id());
@@ -66,16 +66,16 @@ public class LoginUseCase {
 
     CreatedUser user = userReader.getUserById(identity.userId());
     return new AuthResult(
-      toAuthenticatedUser(user), tokenPair.accessToken(), tokenPair.refreshToken());
+        toAuthenticatedUser(user), tokenPair.accessToken(), tokenPair.refreshToken());
   }
 
   private AuthenticatedUserDto toAuthenticatedUser(CreatedUser user) {
     return new AuthenticatedUserDto(
-      user.id(),
-      user.email(),
-      user.username(),
-      user.displayName(),
-      user.avatarUrl(),
-      user.role());
+        user.id(),
+        user.email(),
+        user.username(),
+        user.displayName(),
+        user.avatarUrl(),
+        user.role());
   }
 }

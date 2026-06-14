@@ -26,8 +26,8 @@ public class Sha256RefreshTokenHasher implements RefreshTokenHasher {
     }
 
     return MessageDigest.isEqual(
-      sha256(refreshToken).getBytes(StandardCharsets.UTF_8),
-      refreshTokenHash.getBytes(StandardCharsets.UTF_8));
+        sha256(refreshToken).getBytes(StandardCharsets.UTF_8),
+        refreshTokenHash.getBytes(StandardCharsets.UTF_8));
   }
 
   private String sha256(String value) {

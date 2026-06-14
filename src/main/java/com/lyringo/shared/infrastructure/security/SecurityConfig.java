@@ -16,44 +16,40 @@ public class SecurityConfig {
 
   @Bean
   SecurityFilterChain securityFilterChain(
-    HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+      HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
     return http.csrf(AbstractHttpConfigurer::disable)
-      .sessionManagement(
-        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-      .authorizeHttpRequests(
-        authorize ->
-          authorize
-            .requestMatchers(
-              "/error",
-              "/actuator/health/**",
-              "/api/v1",
-              "/api/v1/auth/register",
-              "/api/v1/auth/login",
-              "/api/v1/auth/refresh")
-            .permitAll()
-            .anyRequest()
-            .authenticated())
-      .exceptionHandling(
-        exception ->
-          exception.authenticationEntryPoint(
-            (request, response, authException) ->
-              writeJsonError(
-                response
-              )))
-      .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-      .build();
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            authorize ->
+                authorize
+                    .requestMatchers(
+                        "/error",
+                        "/actuator/health/**",
+                        "/api/v1",
+                        "/api/v1/auth/register",
+                        "/api/v1/auth/login",
+                        "/api/v1/auth/refresh")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
+        .exceptionHandling(
+            exception ->
+                exception.authenticationEntryPoint(
+                    (request, response, authException) -> writeJsonError(response)))
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+        .build();
   }
 
-  private static void writeJsonError(
-    HttpServletResponse response) throws IOException {
+  private static void writeJsonError(HttpServletResponse response) throws IOException {
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response
-      .getWriter()
-      .write(
-        """
-        {"code":"%s","message":"%s","details":{}}
-        """
-          .formatted("UNAUTHORIZED", "Authentication is required"));
+        .getWriter()
+        .write(
+            """
+            {"code":"%s","message":"%s","details":{}}
+            """
+                .formatted("UNAUTHORIZED", "Authentication is required"));
   }
 }

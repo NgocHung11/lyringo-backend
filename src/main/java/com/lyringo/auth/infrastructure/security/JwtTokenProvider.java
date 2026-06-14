@@ -33,9 +33,9 @@ public class JwtTokenProvider implements TokenProvider, AccessTokenVerifier {
   private final SecureRandom secureRandom;
 
   public JwtTokenProvider(
-    @Value("${lyringo.security.jwt.issuer}") String issuer,
-    @Value("${lyringo.security.jwt.secret}") String secret,
-    @Value("${lyringo.security.jwt.access-token-ttl-minutes}") long accessTokenTtlMinutes) {
+      @Value("${lyringo.security.jwt.issuer}") String issuer,
+      @Value("${lyringo.security.jwt.secret}") String secret,
+      @Value("${lyringo.security.jwt.access-token-ttl-minutes}") long accessTokenTtlMinutes) {
     this.issuer = issuer;
     this.accessTokenTtl = Duration.ofMinutes(accessTokenTtlMinutes);
     this.signingKey = createSigningKey(secret);
@@ -54,12 +54,12 @@ public class JwtTokenProvider implements TokenProvider, AccessTokenVerifier {
   public AccessTokenPayload verify(String accessToken) {
     try {
       Claims claims =
-        Jwts.parser()
-          .verifyWith(signingKey)
-          .requireIssuer(issuer)
-          .build()
-          .parseSignedClaims(accessToken)
-          .getPayload();
+          Jwts.parser()
+              .verifyWith(signingKey)
+              .requireIssuer(issuer)
+              .build()
+              .parseSignedClaims(accessToken)
+              .getPayload();
 
       UUID userId = UUID.fromString(claims.getSubject());
       String sessionId = claims.get("sid", String.class);
@@ -69,10 +69,7 @@ public class JwtTokenProvider implements TokenProvider, AccessTokenVerifier {
       }
 
       return new AccessTokenPayload(
-        userId,
-        UUID.fromString(sessionId),
-        claims.getId(),
-        claims.getExpiration().toInstant());
+          userId, UUID.fromString(sessionId), claims.getId(), claims.getExpiration().toInstant());
     } catch (JwtException | IllegalArgumentException exception) {
       throw new InvalidAccessTokenException();
     }
@@ -83,14 +80,14 @@ public class JwtTokenProvider implements TokenProvider, AccessTokenVerifier {
     Instant expiresAt = now.plus(accessTokenTtl);
 
     return Jwts.builder()
-      .issuer(issuer)
-      .subject(userId.value().toString())
-      .id(UUID.randomUUID().toString())
-      .issuedAt(Date.from(now))
-      .expiration(Date.from(expiresAt))
-      .claim("sid", sessionId.value().toString())
-      .signWith(signingKey)
-      .compact();
+        .issuer(issuer)
+        .subject(userId.value().toString())
+        .id(UUID.randomUUID().toString())
+        .issuedAt(Date.from(now))
+        .expiration(Date.from(expiresAt))
+        .claim("sid", sessionId.value().toString())
+        .signWith(signingKey)
+        .compact();
   }
 
   private String createRefreshToken() {
