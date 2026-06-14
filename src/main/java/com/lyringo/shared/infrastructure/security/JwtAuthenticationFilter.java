@@ -15,20 +15,39 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+  static final String[] PUBLIC_ENDPOINTS = {
+    "/error",
+    "/actuator/health/**",
+    "/api/v1",
+    "/api/v1/auth/register",
+    "/api/v1/auth/login",
+    "/api/v1/auth/refresh"
+  };
+
   private static final String BEARER_PREFIX = "Bearer ";
   private static final String INVALID_ACCESS_TOKEN_MESSAGE = "Invalid access token";
   private static final Logger LOGGER = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
   private final AccessTokenVerifier accessTokenVerifier;
+  private final List<RequestMatcher> publicEndpointMatchers;
 
   public JwtAuthenticationFilter(AccessTokenVerifier accessTokenVerifier) {
     this.accessTokenVerifier = accessTokenVerifier;
+    this.publicEndpointMatchers =
+        List.of(PUBLIC_ENDPOINTS).stream().map(AntPathRequestMatcher::new).toList();
+  }
+
+  @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) {
+    return publicEndpointMatchers.stream().anyMatch(matcher -> matcher.matches(request));
   }
 
   @Override
@@ -38,7 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     String accessToken = extractBearerToken(request);
 
     if (accessToken == null) {
-      filterChain.doFilter(request, response);
+      writeUnauthorized(response);
       return;
     }
 

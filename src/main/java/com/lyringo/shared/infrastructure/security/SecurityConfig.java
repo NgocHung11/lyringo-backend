@@ -23,13 +23,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             authorize ->
                 authorize
-                    .requestMatchers(
-                        "/error",
-                        "/actuator/health/**",
-                        "/api/v1",
-                        "/api/v1/auth/register",
-                        "/api/v1/auth/login",
-                        "/api/v1/auth/refresh")
+                    .requestMatchers(JwtAuthenticationFilter.PUBLIC_ENDPOINTS)
                     .permitAll()
                     .anyRequest()
                     .authenticated())
