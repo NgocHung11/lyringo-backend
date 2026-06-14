@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +22,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private static final String BEARER_PREFIX = "Bearer ";
+  private static final String INVALID_ACCESS_TOKEN_MESSAGE = "Invalid access token";
+  private static final Logger LOGGER = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
   private final AccessTokenVerifier accessTokenVerifier;
 
@@ -52,8 +56,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       filterChain.doFilter(request, response);
     } catch (InvalidAccessTokenException exception) {
       SecurityContextHolder.clearContext();
-      System.out.println("JWT INVALID: " + exception.getMessage());
-      writeUnauthorized(response, exception.getMessage());
+      LOGGER.debug("Invalid access token rejected", exception);
+      writeUnauthorized(response);
     }
   }
 
@@ -73,7 +77,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     return token;
   }
 
-  private void writeUnauthorized(HttpServletResponse response, String message) throws IOException {
+  private void writeUnauthorized(HttpServletResponse response) throws IOException {
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response
@@ -82,6 +86,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             """
             {"code":"UNAUTHORIZED","message":"%s","details":{}}
             """
-                .formatted(message));
+                .formatted(INVALID_ACCESS_TOKEN_MESSAGE));
   }
 }

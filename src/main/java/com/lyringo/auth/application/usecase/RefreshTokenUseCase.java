@@ -51,13 +51,11 @@ public class RefreshTokenUseCase {
       throw new InvalidRefreshTokenException();
     }
 
-    TokenPair tokenPair = tokenProvider.issueTokens(session.userId(), session.id());
-
-    session.setRefreshTokenHash(refreshTokenHasher.hash(tokenPair.refreshToken()));
-
-    authSessionRepository.save(session);
-
     CreatedUser user = userReader.getUserById(session.userId());
+
+    TokenPair tokenPair = tokenProvider.issueTokens(session.userId(), session.id());
+    session.setRefreshTokenHash(refreshTokenHasher.hash(tokenPair.refreshToken()));
+    authSessionRepository.save(session);
 
     return new AuthResult(
         toAuthenticatedUser(user), tokenPair.accessToken(), tokenPair.refreshToken());
