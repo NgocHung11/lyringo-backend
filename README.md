@@ -56,6 +56,15 @@ This rule is enforced by ArchUnit tests in `src/test/java/com/lyringo/architectu
 docker compose up -d postgres redis
 ```
 
+## Database migrations
+
+Database schema changes are managed by Flyway, not Hibernate auto DDL.
+
+- Keep `spring.jpa.hibernate.ddl-auto=validate` so Hibernate only checks the schema.
+- Put SQL migrations in `src/main/resources/db/migration`.
+- Name new migrations like `V2__add_user_profile_fields.sql`.
+- Do not edit an old migration after it has run in a shared database; add a new versioned migration instead.
+
 ## Run the app
 
 ```bash
