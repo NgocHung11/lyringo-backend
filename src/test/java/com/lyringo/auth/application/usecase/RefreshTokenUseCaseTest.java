@@ -66,7 +66,8 @@ class RefreshTokenUseCaseTest {
     assertThat(session.refreshTokenHash()).isEqualTo("rotated-refresh-hash");
 
     InOrder order = inOrder(userReader, tokenProvider, authSessionRepository);
-    order.verify(authSessionRepository)
+    order
+        .verify(authSessionRepository)
         .findActiveByRefreshTokenHash(eq("existing-refresh-hash"), any());
     order.verify(userReader).getUserById(userId);
     order.verify(tokenProvider).issueTokens(userId, session.id());

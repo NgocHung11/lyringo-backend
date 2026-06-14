@@ -49,17 +49,19 @@ public class RefreshTokenUseCase {
     session.setRefreshTokenHash(refreshTokenHasher.hash(tokenPair.refreshToken()));
     authSessionRepository.save(session);
 
-    return new AuthResult(
-        toAuthenticatedUser(user), tokenPair.accessToken(), tokenPair.refreshToken());
+    return buildTokenRotationResult(user, tokenPair);
   }
 
-  private AuthenticatedUserDto toAuthenticatedUser(CreatedUser user) {
-    return new AuthenticatedUserDto(
-        user.id(),
-        user.email(),
-        user.username(),
-        user.displayName(),
-        user.avatarUrl(),
-        user.role());
+  private AuthResult buildTokenRotationResult(CreatedUser user, TokenPair tokenPair) {
+    AuthenticatedUserDto userDto =
+        new AuthenticatedUserDto(
+            user.id(),
+            user.email(),
+            user.username(),
+            user.displayName(),
+            user.avatarUrl(),
+            user.role());
+
+    return new AuthResult(userDto, tokenPair.accessToken(), tokenPair.refreshToken());
   }
 }
