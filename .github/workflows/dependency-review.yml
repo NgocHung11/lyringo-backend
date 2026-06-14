@@ -3,6 +3,14 @@ name: Dependency Review
 on:
   pull_request:
     branches: [main, develop]
+    paths:
+      - pom.xml
+      - .github/dependabot.yml
+      - .github/workflows/**/*
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read

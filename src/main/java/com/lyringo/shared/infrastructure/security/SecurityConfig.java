@@ -10,7 +10,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 public class SecurityConfig {
@@ -20,9 +19,7 @@ public class SecurityConfig {
       HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
     return http.csrf(
             csrf ->
-                csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                    .requireCsrfProtectionMatcher(
-                        new AntPathRequestMatcher("/api/v1/auth/refresh", "POST")))
+                csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
