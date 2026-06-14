@@ -28,6 +28,8 @@ import org.mockito.InOrder;
 
 class RefreshTokenUseCaseTest {
 
+  private static final Instant FIXED_NOW = Instant.parse("2026-01-01T00:00:00Z");
+
   private final AuthSessionRepository authSessionRepository = mock(AuthSessionRepository.class);
   private final RefreshTokenHasher refreshTokenHasher = mock(RefreshTokenHasher.class);
   private final TokenProvider tokenProvider = mock(TokenProvider.class);
@@ -39,7 +41,7 @@ class RefreshTokenUseCaseTest {
   @Test
   void shouldResolveUserBeforeIssuingRotatedTokens() {
     UserId userId = UserId.newId();
-    AuthSession session = activeSession(userId, "existing-refresh-hash");
+    AuthSession session = activeSession(userId);
     CreatedUser user =
         new CreatedUser(
             userId.value().toString(),
@@ -77,7 +79,7 @@ class RefreshTokenUseCaseTest {
   @Test
   void shouldNotIssueOrPersistRotatedTokensWhenSessionUserCannotBeResolved() {
     UserId userId = UserId.newId();
-    AuthSession session = activeSession(userId, "existing-refresh-hash");
+    AuthSession session = activeSession(userId);
     RuntimeException unresolvedUser = new RuntimeException("User not found");
 
     when(refreshTokenHasher.hash("incoming-refresh-token")).thenReturn("existing-refresh-hash");
@@ -94,16 +96,16 @@ class RefreshTokenUseCaseTest {
     verify(authSessionRepository, never()).save(session);
   }
 
-  private AuthSession activeSession(UserId userId, String refreshTokenHash) {
+  private AuthSession activeSession(UserId userId) {
     return new AuthSession(
         AuthSessionId.newId(),
         userId,
-        refreshTokenHash,
+        "existing-refresh-hash",
         "JUnit",
         "127.0.0.1",
         null,
-        Instant.now().plusSeconds(300),
-        Instant.now().minusSeconds(60),
-        Instant.now().minusSeconds(60));
+        FIXED_NOW.plusSeconds(300),
+        FIXED_NOW.minusSeconds(60),
+        FIXED_NOW.minusSeconds(60));
   }
 }

@@ -21,6 +21,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 class JwtAuthenticationFilterTest {
 
+  private static final Instant FIXED_NOW = Instant.parse("2026-01-01T00:00:00Z");
+
   private final AccessTokenVerifier accessTokenVerifier = mock(AccessTokenVerifier.class);
   private final JwtAuthenticationFilter filter = new JwtAuthenticationFilter(accessTokenVerifier);
 
@@ -71,7 +73,7 @@ class JwtAuthenticationFilterTest {
     UUID userId = UUID.randomUUID();
     UUID sessionId = UUID.randomUUID();
     AccessTokenPayload payload =
-        new AccessTokenPayload(userId, sessionId, "token-id", Instant.now().plusSeconds(60));
+        new AccessTokenPayload(userId, sessionId, "token-id", FIXED_NOW.plusSeconds(60));
     when(accessTokenVerifier.verify("valid-token")).thenReturn(payload);
 
     MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/users/me");
