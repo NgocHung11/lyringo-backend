@@ -15,8 +15,7 @@ import org.junit.jupiter.api.Test;
 
 class JwtTokenProviderTest {
 
-  private static final String SECRET =
-    "test-lyringo-jwt-secret-minimum-32-bytes-1234567890";
+  private static final String SECRET = "test-lyringo-jwt-secret-minimum-32-bytes-1234567890";
 
   private final JwtTokenProvider tokenProvider = new JwtTokenProvider("lyringo-test", SECRET, 15);
 
@@ -62,12 +61,9 @@ class JwtTokenProviderTest {
   private Claims parseClaims(String accessToken) {
     SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
 
-    return Jwts.parser()
-      .verifyWith(key)
-      .build()
-      .parseSignedClaims(accessToken)
-      .getPayload();
+    return Jwts.parser().verifyWith(key).build().parseSignedClaims(accessToken).getPayload();
   }
+
   @Test
   void shouldVerifyAccessToken() {
     UserId userId = UserId.newId();
@@ -83,4 +79,3 @@ class JwtTokenProviderTest {
     assertThat(payload.expiresAt()).isNotNull();
   }
 }
-

@@ -16,7 +16,7 @@ public class UserPublicApiAdapter implements UserPublicApi {
   private final GetUserByIdUseCase getUserByIdUseCase;
 
   public UserPublicApiAdapter(
-    CreateUserUseCase createUserUseCase, GetUserByIdUseCase getUserByIdUseCase) {
+      CreateUserUseCase createUserUseCase, GetUserByIdUseCase getUserByIdUseCase) {
     this.createUserUseCase = createUserUseCase;
     this.getUserByIdUseCase = getUserByIdUseCase;
   }

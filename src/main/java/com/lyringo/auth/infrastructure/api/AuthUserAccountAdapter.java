@@ -22,8 +22,8 @@ public class AuthUserAccountAdapter implements UserCreator, UserReader {
   @Override
   public CreatedUser createUser(CreateUserAccountRequest request) {
     UserDto user =
-      userPublicApi.createUser(
-        new CreateUserCommand(request.email(), request.username(), request.displayName()));
+        userPublicApi.createUser(
+            new CreateUserCommand(request.email(), request.username(), request.displayName()));
 
     return toCreatedUser(user);
   }
@@ -36,6 +36,11 @@ public class AuthUserAccountAdapter implements UserCreator, UserReader {
 
   private CreatedUser toCreatedUser(UserDto user) {
     return new CreatedUser(
-      user.id(), user.email(), user.username(), user.displayName(), user.avatarUrl(), user.role());
+        user.id(),
+        user.email(),
+        user.username(),
+        user.displayName(),
+        user.avatarUrl(),
+        user.role());
   }
 }

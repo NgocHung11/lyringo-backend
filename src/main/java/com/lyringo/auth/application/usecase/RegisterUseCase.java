@@ -29,12 +29,12 @@ public class RegisterUseCase {
   private final UserCreator userCreator;
 
   public RegisterUseCase(
-    AuthIdentityRepository authIdentityRepository,
-    AuthSessionRepository authSessionRepository,
-    PasswordHasher passwordHasher,
-    RefreshTokenHasher refreshTokenHasher,
-    TokenProvider tokenProvider,
-    UserCreator userCreator) {
+      AuthIdentityRepository authIdentityRepository,
+      AuthSessionRepository authSessionRepository,
+      PasswordHasher passwordHasher,
+      RefreshTokenHasher refreshTokenHasher,
+      TokenProvider tokenProvider,
+      UserCreator userCreator) {
     this.authIdentityRepository = authIdentityRepository;
     this.authSessionRepository = authSessionRepository;
     this.passwordHasher = passwordHasher;
@@ -50,21 +50,21 @@ public class RegisterUseCase {
     }
 
     CreatedUser user =
-      userCreator.createUser(
-        new CreateUserAccountRequest(
-          command.email(), command.username(), command.displayName()));
+        userCreator.createUser(
+            new CreateUserAccountRequest(
+                command.email(), command.username(), command.displayName()));
     UserId userId = new UserId(UUID.fromString(user.id()));
 
     AuthIdentity identity =
-      AuthIdentity.emailPassword(userId, email, passwordHasher.hash(command.password()));
+        AuthIdentity.emailPassword(userId, email, passwordHasher.hash(command.password()));
     authIdentityRepository.save(identity);
 
     AuthSession session =
-      AuthSession.create(
-        userId,
-        command.userAgent(),
-        command.ipAddress(),
-        Instant.now().plus(Duration.ofDays(30)));
+        AuthSession.create(
+            userId,
+            command.userAgent(),
+            command.ipAddress(),
+            Instant.now().plus(Duration.ofDays(30)));
     authSessionRepository.save(session);
 
     TokenPair tokenPair = tokenProvider.issueTokens(userId, session.id());
@@ -72,16 +72,16 @@ public class RegisterUseCase {
     authSessionRepository.save(session);
 
     return new AuthResult(
-      toAuthenticatedUser(user), tokenPair.accessToken(), tokenPair.refreshToken());
+        toAuthenticatedUser(user), tokenPair.accessToken(), tokenPair.refreshToken());
   }
 
   private AuthenticatedUserDto toAuthenticatedUser(CreatedUser user) {
     return new AuthenticatedUserDto(
-      user.id(),
-      user.email(),
-      user.username(),
-      user.displayName(),
-      user.avatarUrl(),
-      user.role());
+        user.id(),
+        user.email(),
+        user.username(),
+        user.displayName(),
+        user.avatarUrl(),
+        user.role());
   }
 }

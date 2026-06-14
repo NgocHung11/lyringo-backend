@@ -42,15 +42,15 @@ public class AuthSessionJpaEntity {
   protected AuthSessionJpaEntity() {}
 
   public AuthSessionJpaEntity(
-    UUID id,
-    UUID userId,
-    String refreshTokenHash,
-    String userAgent,
-    String ipAddress,
-    Instant revokedAt,
-    Instant expiresAt,
-    Instant createdAt,
-    Instant updatedAt) {
+      UUID id,
+      UUID userId,
+      String refreshTokenHash,
+      String userAgent,
+      String ipAddress,
+      Instant revokedAt,
+      Instant expiresAt,
+      Instant createdAt,
+      Instant updatedAt) {
     this.id = id;
     this.userId = userId;
     this.refreshTokenHash = refreshTokenHash;

@@ -10,27 +10,27 @@ final class AuthSessionJpaMapper {
 
   static AuthSessionJpaEntity toJpa(AuthSession session) {
     return new AuthSessionJpaEntity(
-      session.id().value(),
-      session.userId().value(),
-      session.refreshTokenHash(),
-      session.userAgent(),
-      session.ipAddress(),
-      session.revokedAt(),
-      session.expiresAt(),
-      session.createdAt(),
-      session.updatedAt());
+        session.id().value(),
+        session.userId().value(),
+        session.refreshTokenHash(),
+        session.userAgent(),
+        session.ipAddress(),
+        session.revokedAt(),
+        session.expiresAt(),
+        session.createdAt(),
+        session.updatedAt());
   }
 
   static AuthSession toDomain(AuthSessionJpaEntity entity) {
     return new AuthSession(
-      new AuthSessionId(entity.getId()),
-      new UserId(entity.getUserId()),
-      entity.getRefreshTokenHash(),
-      entity.getUserAgent(),
-      entity.getIpAddress(),
-      entity.getRevokedAt(),
-      entity.getExpiresAt(),
-      entity.getCreatedAt(),
-      entity.getUpdatedAt());
+        new AuthSessionId(entity.getId()),
+        new UserId(entity.getUserId()),
+        entity.getRefreshTokenHash(),
+        entity.getUserAgent(),
+        entity.getIpAddress(),
+        entity.getRevokedAt(),
+        entity.getExpiresAt(),
+        entity.getCreatedAt(),
+        entity.getUpdatedAt());
   }
 }

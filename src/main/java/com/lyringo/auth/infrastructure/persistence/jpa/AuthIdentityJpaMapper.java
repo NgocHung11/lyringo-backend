@@ -11,25 +11,25 @@ final class AuthIdentityJpaMapper {
 
   static AuthIdentityJpaEntity toJpa(AuthIdentity identity) {
     return new AuthIdentityJpaEntity(
-      identity.id().value(),
-      identity.userId().value(),
-      identity.provider(),
-      identity.providerUserId(),
-      identity.email().value(),
-      identity.passwordHash(),
-      identity.createdAt(),
-      identity.updatedAt());
+        identity.id().value(),
+        identity.userId().value(),
+        identity.provider(),
+        identity.providerUserId(),
+        identity.email().value(),
+        identity.passwordHash(),
+        identity.createdAt(),
+        identity.updatedAt());
   }
 
   static AuthIdentity toDomain(AuthIdentityJpaEntity entity) {
     return new AuthIdentity(
-      new AuthIdentityId(entity.getId()),
-      new UserId(entity.getUserId()),
-      entity.getProvider(),
-      entity.getProviderUserId(),
-      new Email(entity.getEmail()),
-      entity.getPasswordHash(),
-      entity.getCreatedAt(),
-      entity.getUpdatedAt());
+        new AuthIdentityId(entity.getId()),
+        new UserId(entity.getUserId()),
+        entity.getProvider(),
+        entity.getProviderUserId(),
+        new Email(entity.getEmail()),
+        entity.getPasswordHash(),
+        entity.getCreatedAt(),
+        entity.getUpdatedAt());
   }
 }

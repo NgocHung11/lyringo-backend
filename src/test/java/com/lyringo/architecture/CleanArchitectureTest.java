@@ -19,7 +19,10 @@ class CleanArchitectureTest {
           .should()
           .dependOnClassesThat()
           .resideInAnyPackage(
-              "org.springframework..", "jakarta.persistence..", "jakarta.servlet..", "javax.servlet..");
+              "org.springframework..",
+              "jakarta.persistence..",
+              "jakarta.servlet..",
+              "javax.servlet..");
 
   @ArchTest
   static final ArchRule application_should_not_depend_on_frameworks =
@@ -29,7 +32,10 @@ class CleanArchitectureTest {
           .should()
           .dependOnClassesThat()
           .resideInAnyPackage(
-              "org.springframework..", "jakarta.persistence..", "jakarta.servlet..", "javax.servlet..");
+              "org.springframework..",
+              "jakarta.persistence..",
+              "jakarta.servlet..",
+              "javax.servlet..");
 
   @ArchTest
   static final ArchRule application_should_not_depend_on_infrastructure =

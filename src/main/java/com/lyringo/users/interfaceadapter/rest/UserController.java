@@ -21,7 +21,7 @@ public class UserController {
   @GetMapping("/api/v1/users/me")
   public UserProfileResponse me(Authentication authentication) {
     AuthenticatedUserPrincipal principal =
-      (AuthenticatedUserPrincipal) authentication.getPrincipal();
+        (AuthenticatedUserPrincipal) authentication.getPrincipal();
 
     UserDto user = getUserByIdUseCase.execute(new UserId(principal.userId()));
 

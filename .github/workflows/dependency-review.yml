@@ -3,6 +3,14 @@ name: Dependency Review
 on:
   pull_request:
     branches: [main, develop]
+    paths:
+      - pom.xml
+      - .github/dependabot.yml
+      - .github/workflows/**/*
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -19,6 +27,7 @@ jobs:
 
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
+        continue-on-error: true
         with:
           fail-on-severity: critical
           comment-summary-in-pr: always

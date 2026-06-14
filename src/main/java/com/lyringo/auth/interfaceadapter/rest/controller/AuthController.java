@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,26 +31,26 @@ public class AuthController {
   private final boolean secureCookie;
 
   public AuthController(
-    TransactionalAuthService authService,
-    @Value("${lyringo.security.cookies.secure:false}") boolean secureCookie) {
+      TransactionalAuthService authService,
+      @Value("${lyringo.security.cookies.secure:false}") boolean secureCookie) {
     this.authService = authService;
     this.secureCookie = secureCookie;
   }
 
   @PostMapping("/register")
   public ResponseEntity<AuthResponse> register(
-    @Valid @RequestBody RegisterRequest request,
-    HttpServletRequest httpRequest,
-    HttpServletResponse httpResponse) {
+      @Valid @RequestBody RegisterRequest request,
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse) {
     AuthResult result =
-      authService.register(
-        new RegisterCommand(
-          request.email(),
-          request.username(),
-          request.displayName(),
-          request.password(),
-          userAgent(httpRequest),
-          clientIp(httpRequest)));
+        authService.register(
+            new RegisterCommand(
+                request.email(),
+                request.username(),
+                request.displayName(),
+                request.password(),
+                userAgent(httpRequest),
+                clientIp(httpRequest)));
 
     addRefreshTokenCookie(httpResponse, result.refreshToken());
 
@@ -58,13 +59,16 @@ public class AuthController {
 
   @PostMapping("/login")
   public ResponseEntity<AuthResponse> login(
-    @Valid @RequestBody LoginRequest request,
-    HttpServletRequest httpRequest,
-    HttpServletResponse httpResponse) {
+      @Valid @RequestBody LoginRequest request,
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse) {
     AuthResult result =
-      authService.login(
-        new LoginCommand(
-          request.email(), request.password(), userAgent(httpRequest), clientIp(httpRequest)));
+        authService.login(
+            new LoginCommand(
+                request.email(),
+                request.password(),
+                userAgent(httpRequest),
+                clientIp(httpRequest)));
 
     addRefreshTokenCookie(httpResponse, result.refreshToken());
 
@@ -73,13 +77,13 @@ public class AuthController {
 
   private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
     ResponseCookie cookie =
-      ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
-        .httpOnly(true)
-        .secure(secureCookie)
-        .sameSite("Lax")
-        .path("/api/v1/auth")
-        .maxAge(Duration.ofDays(30))
-        .build();
+        ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
+            .httpOnly(true)
+            .secure(secureCookie)
+            .sameSite("Lax")
+            .path("/api/v1/auth")
+            .maxAge(Duration.ofDays(30))
+            .build();
 
     response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
   }
@@ -97,10 +101,17 @@ public class AuthController {
 
     return request.getRemoteAddr();
   }
+
+  @GetMapping("/csrf")
+  public ResponseEntity<Void> csrf(CsrfToken csrfToken) {
+    csrfToken.getToken();
+    return ResponseEntity.noContent().build();
+  }
+
   @PostMapping("/refresh")
   public ResponseEntity<AuthResponse> refresh(
-    @CookieValue(value = REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshToken,
-    HttpServletResponse httpResponse) {
+      @CookieValue(value = REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshToken,
+      HttpServletResponse httpResponse) {
     if (refreshToken == null || refreshToken.isBlank()) {
       throw new InvalidRefreshTokenException();
     }

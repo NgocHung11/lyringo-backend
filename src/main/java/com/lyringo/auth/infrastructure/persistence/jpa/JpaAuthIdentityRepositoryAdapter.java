@@ -13,7 +13,7 @@ public class JpaAuthIdentityRepositoryAdapter implements AuthIdentityRepository 
   private final SpringDataAuthIdentityRepository springDataAuthIdentityRepository;
 
   public JpaAuthIdentityRepositoryAdapter(
-    SpringDataAuthIdentityRepository springDataAuthIdentityRepository) {
+      SpringDataAuthIdentityRepository springDataAuthIdentityRepository) {
     this.springDataAuthIdentityRepository = springDataAuthIdentityRepository;
   }
 
@@ -27,13 +27,13 @@ public class JpaAuthIdentityRepositoryAdapter implements AuthIdentityRepository 
   @Override
   public Optional<AuthIdentity> findEmailPasswordIdentityByEmail(Email email) {
     return springDataAuthIdentityRepository
-      .findByProviderAndEmail(AuthProvider.EMAIL_PASSWORD, email.value())
-      .map(AuthIdentityJpaMapper::toDomain);
+        .findByProviderAndEmail(AuthProvider.EMAIL_PASSWORD, email.value())
+        .map(AuthIdentityJpaMapper::toDomain);
   }
 
   @Override
   public boolean existsEmailPasswordIdentityByEmail(Email email) {
     return springDataAuthIdentityRepository.existsByProviderAndEmail(
-      AuthProvider.EMAIL_PASSWORD, email.value());
+        AuthProvider.EMAIL_PASSWORD, email.value());
   }
 }

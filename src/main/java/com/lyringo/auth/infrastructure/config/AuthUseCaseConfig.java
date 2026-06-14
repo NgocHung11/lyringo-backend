@@ -18,45 +18,45 @@ public class AuthUseCaseConfig {
 
   @Bean
   RegisterUseCase registerUseCase(
-    AuthIdentityRepository authIdentityRepository,
-    AuthSessionRepository authSessionRepository,
-    PasswordHasher passwordHasher,
-    RefreshTokenHasher refreshTokenHasher,
-    TokenProvider tokenProvider,
-    UserCreator userCreator) {
+      AuthIdentityRepository authIdentityRepository,
+      AuthSessionRepository authSessionRepository,
+      PasswordHasher passwordHasher,
+      RefreshTokenHasher refreshTokenHasher,
+      TokenProvider tokenProvider,
+      UserCreator userCreator) {
     return new RegisterUseCase(
-      authIdentityRepository,
-      authSessionRepository,
-      passwordHasher,
-      refreshTokenHasher,
-      tokenProvider,
-      userCreator);
+        authIdentityRepository,
+        authSessionRepository,
+        passwordHasher,
+        refreshTokenHasher,
+        tokenProvider,
+        userCreator);
   }
 
   @Bean
   LoginUseCase loginUseCase(
-    AuthIdentityRepository authIdentityRepository,
-    AuthSessionRepository authSessionRepository,
-    PasswordHasher passwordHasher,
-    RefreshTokenHasher refreshTokenHasher,
-    TokenProvider tokenProvider,
-    UserReader userReader) {
+      AuthIdentityRepository authIdentityRepository,
+      AuthSessionRepository authSessionRepository,
+      PasswordHasher passwordHasher,
+      RefreshTokenHasher refreshTokenHasher,
+      TokenProvider tokenProvider,
+      UserReader userReader) {
     return new LoginUseCase(
-      authIdentityRepository,
-      authSessionRepository,
-      passwordHasher,
-      refreshTokenHasher,
-      tokenProvider,
-      userReader);
+        authIdentityRepository,
+        authSessionRepository,
+        passwordHasher,
+        refreshTokenHasher,
+        tokenProvider,
+        userReader);
   }
 
   @Bean
   RefreshTokenUseCase refreshTokenUseCase(
-    AuthSessionRepository authSessionRepository,
-    RefreshTokenHasher refreshTokenHasher,
-    TokenProvider tokenProvider,
-    UserReader userReader) {
+      AuthSessionRepository authSessionRepository,
+      RefreshTokenHasher refreshTokenHasher,
+      TokenProvider tokenProvider,
+      UserReader userReader) {
     return new RefreshTokenUseCase(
-      authSessionRepository, refreshTokenHasher, tokenProvider, userReader);
+        authSessionRepository, refreshTokenHasher, tokenProvider, userReader);
   }
 }

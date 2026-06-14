@@ -11,27 +11,27 @@ final class UserJpaMapper {
 
   static UserJpaEntity toJpa(User user) {
     return new UserJpaEntity(
-      user.id().value(),
-      user.email().value(),
-      user.username().value(),
-      user.displayName(),
-      user.avatarUrl(),
-      user.status(),
-      user.role(),
-      user.createdAt(),
-      user.updatedAt());
+        user.id().value(),
+        user.email().value(),
+        user.username().value(),
+        user.displayName(),
+        user.avatarUrl(),
+        user.status(),
+        user.role(),
+        user.createdAt(),
+        user.updatedAt());
   }
 
   static User toDomain(UserJpaEntity entity) {
     return new User(
-      new UserId(entity.getId()),
-      new Email(entity.getEmail()),
-      new Username(entity.getUsername()),
-      entity.getDisplayName(),
-      entity.getAvatarUrl(),
-      entity.getStatus(),
-      entity.getRole(),
-      entity.getCreatedAt(),
-      entity.getUpdatedAt());
+        new UserId(entity.getId()),
+        new Email(entity.getEmail()),
+        new Username(entity.getUsername()),
+        entity.getDisplayName(),
+        entity.getAvatarUrl(),
+        entity.getStatus(),
+        entity.getRole(),
+        entity.getCreatedAt(),
+        entity.getUpdatedAt());
   }
 }

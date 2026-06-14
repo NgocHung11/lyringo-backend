@@ -43,14 +43,14 @@ public class AuthIdentityJpaEntity {
   protected AuthIdentityJpaEntity() {}
 
   public AuthIdentityJpaEntity(
-    UUID id,
-    UUID userId,
-    AuthProvider provider,
-    String providerUserId,
-    String email,
-    String passwordHash,
-    Instant createdAt,
-    Instant updatedAt) {
+      UUID id,
+      UUID userId,
+      AuthProvider provider,
+      String providerUserId,
+      String email,
+      String passwordHash,
+      Instant createdAt,
+      Instant updatedAt) {
     this.id = id;
     this.userId = userId;
     this.provider = provider;

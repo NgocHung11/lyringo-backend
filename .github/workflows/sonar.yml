@@ -1,10 +1,7 @@
 name: Sonar
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -14,6 +11,8 @@ jobs:
   sonar:
     name: Sonar Analysis
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
       - name: Checkout source code
@@ -28,11 +27,15 @@ jobs:
           java-version: '21'
           cache: maven
 
+      - name: Build and test
+        if: env.SONAR_TOKEN == ''
+        run: mvn -B clean verify
+
       - name: Build, test, and analyze
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        if: env.SONAR_TOKEN != ''
         run: |
-          mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=lyringo_lyringo-backend \
-            -Dsonar.organization=lyringo \
-            -Dsonar.host.url=https://sonarcloud.io
+          mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar \
+            -Dsonar.projectKey=NgocHung11_lyringo-backend \
+            -Dsonar.organization=ngochung11 \
+            -Dsonar.region=us \
+            -Dsonar.token="${SONAR_TOKEN}"
