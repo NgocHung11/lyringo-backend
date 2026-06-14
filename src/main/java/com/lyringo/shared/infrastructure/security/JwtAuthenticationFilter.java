@@ -29,6 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     "/error",
     "/actuator/health/**",
     "/api/v1",
+    "/api/v1/auth/csrf",
     "/api/v1/auth/register",
     "/api/v1/auth/login",
     "/api/v1/auth/refresh"

@@ -42,6 +42,18 @@ class JwtAuthenticationFilterTest {
   }
 
   @Test
+  void skipsCsrfEndpointWithoutToken() throws Exception {
+    MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/auth/csrf");
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    FilterChain filterChain = mock(FilterChain.class);
+
+    filter.doFilter(request, response, filterChain);
+
+    verify(filterChain).doFilter(request, response);
+    verify(accessTokenVerifier, never()).verify(anyString());
+  }
+
+  @Test
   void rejectsProtectedEndpointsWithoutToken() throws Exception {
     MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/users/me");
     MockHttpServletResponse response = new MockHttpServletResponse();
