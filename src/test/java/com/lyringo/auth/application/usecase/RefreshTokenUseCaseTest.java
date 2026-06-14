@@ -2,6 +2,8 @@ package com.lyringo.auth.application.usecase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -48,7 +50,7 @@ class RefreshTokenUseCaseTest {
             "USER");
 
     when(refreshTokenHasher.hash("incoming-refresh-token")).thenReturn("existing-refresh-hash");
-    when(authSessionRepository.findByRefreshTokenHash("existing-refresh-hash"))
+    when(authSessionRepository.findActiveByRefreshTokenHash(eq("existing-refresh-hash"), any()))
         .thenReturn(Optional.of(session));
     when(userReader.getUserById(userId)).thenReturn(user);
     when(tokenProvider.issueTokens(userId, session.id()))
@@ -64,7 +66,8 @@ class RefreshTokenUseCaseTest {
     assertThat(session.refreshTokenHash()).isEqualTo("rotated-refresh-hash");
 
     InOrder order = inOrder(userReader, tokenProvider, authSessionRepository);
-    order.verify(authSessionRepository).findByRefreshTokenHash("existing-refresh-hash");
+    order.verify(authSessionRepository)
+        .findActiveByRefreshTokenHash(eq("existing-refresh-hash"), any());
     order.verify(userReader).getUserById(userId);
     order.verify(tokenProvider).issueTokens(userId, session.id());
     order.verify(authSessionRepository).save(session);
@@ -77,7 +80,7 @@ class RefreshTokenUseCaseTest {
     RuntimeException unresolvedUser = new RuntimeException("User not found");
 
     when(refreshTokenHasher.hash("incoming-refresh-token")).thenReturn("existing-refresh-hash");
-    when(authSessionRepository.findByRefreshTokenHash("existing-refresh-hash"))
+    when(authSessionRepository.findActiveByRefreshTokenHash(eq("existing-refresh-hash"), any()))
         .thenReturn(Optional.of(session));
     when(userReader.getUserById(userId)).thenThrow(unresolvedUser);
 

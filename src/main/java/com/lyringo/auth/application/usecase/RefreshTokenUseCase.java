@@ -40,12 +40,8 @@ public class RefreshTokenUseCase {
 
     AuthSession session =
         authSessionRepository
-            .findByRefreshTokenHash(refreshTokenHash)
+            .findActiveByRefreshTokenHash(refreshTokenHash, Instant.now())
             .orElseThrow(InvalidRefreshTokenException::new);
-
-    if (!session.isActive(Instant.now())) {
-      throw new InvalidRefreshTokenException();
-    }
 
     CreatedUser user = userReader.getUserById(session.userId());
 
