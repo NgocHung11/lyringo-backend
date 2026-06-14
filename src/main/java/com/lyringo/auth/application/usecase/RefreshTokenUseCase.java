@@ -47,10 +47,6 @@ public class RefreshTokenUseCase {
       throw new InvalidRefreshTokenException();
     }
 
-    if (!refreshTokenHasher.matches(command.refreshToken(), session.refreshTokenHash())) {
-      throw new InvalidRefreshTokenException();
-    }
-
     CreatedUser user = userReader.getUserById(session.userId());
 
     TokenPair tokenPair = tokenProvider.issueTokens(session.userId(), session.id());

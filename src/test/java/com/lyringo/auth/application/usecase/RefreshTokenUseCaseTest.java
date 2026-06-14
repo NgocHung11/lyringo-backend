@@ -32,8 +32,7 @@ class RefreshTokenUseCaseTest {
   private final UserReader userReader = mock(UserReader.class);
 
   private final RefreshTokenUseCase refreshTokenUseCase =
-      new RefreshTokenUseCase(
-          authSessionRepository, refreshTokenHasher, tokenProvider, userReader);
+      new RefreshTokenUseCase(authSessionRepository, refreshTokenHasher, tokenProvider, userReader);
 
   @Test
   void shouldResolveUserBeforeIssuingRotatedTokens() {
@@ -51,8 +50,6 @@ class RefreshTokenUseCaseTest {
     when(refreshTokenHasher.hash("incoming-refresh-token")).thenReturn("existing-refresh-hash");
     when(authSessionRepository.findByRefreshTokenHash("existing-refresh-hash"))
         .thenReturn(Optional.of(session));
-    when(refreshTokenHasher.matches("incoming-refresh-token", "existing-refresh-hash"))
-        .thenReturn(true);
     when(userReader.getUserById(userId)).thenReturn(user);
     when(tokenProvider.issueTokens(userId, session.id()))
         .thenReturn(new TokenPair("access-token", "rotated-refresh-token"));
@@ -82,8 +79,6 @@ class RefreshTokenUseCaseTest {
     when(refreshTokenHasher.hash("incoming-refresh-token")).thenReturn("existing-refresh-hash");
     when(authSessionRepository.findByRefreshTokenHash("existing-refresh-hash"))
         .thenReturn(Optional.of(session));
-    when(refreshTokenHasher.matches("incoming-refresh-token", "existing-refresh-hash"))
-        .thenReturn(true);
     when(userReader.getUserById(userId)).thenThrow(unresolvedUser);
 
     assertThatThrownBy(

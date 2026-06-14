@@ -19,17 +19,6 @@ public class Sha256RefreshTokenHasher implements RefreshTokenHasher {
     return sha256(refreshToken);
   }
 
-  @Override
-  public boolean matches(String refreshToken, String refreshTokenHash) {
-    if (refreshToken == null || refreshTokenHash == null || refreshTokenHash.isBlank()) {
-      return false;
-    }
-
-    return MessageDigest.isEqual(
-        sha256(refreshToken).getBytes(StandardCharsets.UTF_8),
-        refreshTokenHash.getBytes(StandardCharsets.UTF_8));
-  }
-
   private String sha256(String value) {
     try {
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
