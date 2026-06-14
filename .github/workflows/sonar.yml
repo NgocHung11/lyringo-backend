@@ -40,5 +40,4 @@ jobs:
           mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar \
             -Dsonar.projectKey=NgocHung11_lyringo-backend \
             -Dsonar.organization=ngochung11 \
-            -Dsonar.region=us \
-            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.region=us
