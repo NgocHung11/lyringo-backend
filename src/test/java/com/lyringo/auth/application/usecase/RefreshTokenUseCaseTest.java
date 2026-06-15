@@ -100,6 +100,7 @@ class RefreshTokenUseCaseTest {
   @Test
   void shouldReturnNewAccessTokenAndNullRefreshTokenWithinGracePeriod() {
     UserId userId = UserId.newId();
+    Instant realNow = Instant.now();
     AuthSession session =
         new AuthSession(
             AuthSessionId.newId(),
@@ -109,10 +110,10 @@ class RefreshTokenUseCaseTest {
             "JUnit",
             "127.0.0.1",
             null,
-            FIXED_NOW.plusSeconds(300),
-            FIXED_NOW.minusSeconds(10), // rotated 10s ago (within 30s grace)
-            FIXED_NOW.minusSeconds(60),
-            FIXED_NOW.minusSeconds(60));
+            realNow.plusSeconds(300),
+            realNow.minusSeconds(10), // rotated 10s ago (within 30s grace)
+            realNow.minusSeconds(60),
+            realNow.minusSeconds(60));
 
     CreatedUser user =
         new CreatedUser(
@@ -144,6 +145,7 @@ class RefreshTokenUseCaseTest {
   @Test
   void shouldRevokeSessionAndThrowExceptionOnReuseOutsideGracePeriod() {
     UserId userId = UserId.newId();
+    Instant realNow = Instant.now();
     AuthSession session =
         new AuthSession(
             AuthSessionId.newId(),
@@ -153,10 +155,10 @@ class RefreshTokenUseCaseTest {
             "JUnit",
             "127.0.0.1",
             null,
-            FIXED_NOW.plusSeconds(300),
-            FIXED_NOW.minusSeconds(35), // rotated 35s ago (outside grace period)
-            FIXED_NOW.minusSeconds(60),
-            FIXED_NOW.minusSeconds(60));
+            realNow.plusSeconds(300),
+            realNow.minusSeconds(35), // rotated 35s ago (outside 30s grace)
+            realNow.minusSeconds(60),
+            realNow.minusSeconds(60));
 
     when(refreshTokenHasher.hash("incoming-refresh-token")).thenReturn("previous-refresh-hash");
     when(authSessionRepository.findByPreviousRefreshTokenHash("previous-refresh-hash"))
