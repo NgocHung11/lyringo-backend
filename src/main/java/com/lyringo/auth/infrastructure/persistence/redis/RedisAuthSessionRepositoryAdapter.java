@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -59,7 +60,7 @@ public class RedisAuthSessionRepositoryAdapter implements AuthSessionRepository 
         redisTemplate.delete(TOKEN_HASH_KEY_PREFIX + session.previousRefreshTokenHash());
       }
     } catch (JsonProcessingException e) {
-      throw new RuntimeException("Failed to serialize AuthSession to JSON", e);
+      throw new SerializationException("Failed to serialize AuthSession to JSON", e);
     }
 
     return session;
@@ -77,7 +78,7 @@ public class RedisAuthSessionRepositoryAdapter implements AuthSessionRepository 
       RedisAuthSessionDto dto = objectMapper.readValue(json, RedisAuthSessionDto.class);
       return Optional.of(dto.toDomain());
     } catch (JsonProcessingException e) {
-      throw new RuntimeException("Failed to deserialize AuthSession from JSON", e);
+      throw new SerializationException("Failed to deserialize AuthSession from JSON", e);
     }
   }
 
