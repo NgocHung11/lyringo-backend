@@ -18,7 +18,15 @@ public class SecurityConfig {
   SecurityFilterChain securityFilterChain(
       HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
     return http.csrf(
-            csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+            csrf ->
+                csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                    .ignoringRequestMatchers(
+                        "/error",
+                        "/actuator/health/**",
+                        "/api/v1/auth/login",
+                        "/api/v1/auth/register",
+                        "/api/v1/users/**",
+                        "/api/v1/music/**"))
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(

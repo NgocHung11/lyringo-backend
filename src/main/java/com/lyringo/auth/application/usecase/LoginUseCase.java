@@ -15,6 +15,7 @@ import com.lyringo.auth.domain.exception.InvalidCredentialsException;
 import com.lyringo.auth.domain.model.AuthIdentity;
 import com.lyringo.auth.domain.model.AuthSession;
 import com.lyringo.shared.domain.valueobject.Email;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -25,6 +26,7 @@ public class LoginUseCase {
   private final RefreshTokenHasher refreshTokenHasher;
   private final TokenProvider tokenProvider;
   private final UserReader userReader;
+  private final Clock clock;
 
   public LoginUseCase(
       AuthIdentityRepository authIdentityRepository,
@@ -32,13 +34,15 @@ public class LoginUseCase {
       PasswordHasher passwordHasher,
       RefreshTokenHasher refreshTokenHasher,
       TokenProvider tokenProvider,
-      UserReader userReader) {
+      UserReader userReader,
+      Clock clock) {
     this.authIdentityRepository = authIdentityRepository;
     this.authSessionRepository = authSessionRepository;
     this.passwordHasher = passwordHasher;
     this.refreshTokenHasher = refreshTokenHasher;
     this.tokenProvider = tokenProvider;
     this.userReader = userReader;
+    this.clock = clock;
   }
 
   public AuthResult execute(LoginCommand command) {
@@ -52,16 +56,18 @@ public class LoginUseCase {
       throw new InvalidCredentialsException();
     }
 
+    Instant now = Instant.now(clock);
     AuthSession session =
         AuthSession.create(
             identity.userId(),
             command.userAgent(),
             command.ipAddress(),
-            Instant.now().plus(Duration.ofDays(30)));
+            now.plus(Duration.ofDays(30)),
+            now);
     authSessionRepository.save(session);
 
     TokenPair tokenPair = tokenProvider.issueTokens(identity.userId(), session.id());
-    session.setRefreshTokenHash(refreshTokenHasher.hash(tokenPair.refreshToken()));
+    session.setRefreshTokenHash(refreshTokenHasher.hash(tokenPair.refreshToken()), now);
     authSessionRepository.save(session);
 
     CreatedUser user = userReader.getUserById(identity.userId());

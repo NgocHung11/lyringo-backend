@@ -8,13 +8,20 @@ import com.lyringo.auth.application.port.TokenProvider;
 import com.lyringo.auth.application.port.UserCreator;
 import com.lyringo.auth.application.port.UserReader;
 import com.lyringo.auth.application.usecase.LoginUseCase;
+import com.lyringo.auth.application.usecase.LogoutUseCase;
 import com.lyringo.auth.application.usecase.RefreshTokenUseCase;
 import com.lyringo.auth.application.usecase.RegisterUseCase;
+import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class AuthUseCaseConfig {
+
+  @Bean
+  Clock clock() {
+    return Clock.systemUTC();
+  }
 
   @Bean
   RegisterUseCase registerUseCase(
@@ -23,14 +30,16 @@ public class AuthUseCaseConfig {
       PasswordHasher passwordHasher,
       RefreshTokenHasher refreshTokenHasher,
       TokenProvider tokenProvider,
-      UserCreator userCreator) {
+      UserCreator userCreator,
+      Clock clock) {
     return new RegisterUseCase(
         authIdentityRepository,
         authSessionRepository,
         passwordHasher,
         refreshTokenHasher,
         tokenProvider,
-        userCreator);
+        userCreator,
+        clock);
   }
 
   @Bean
@@ -40,14 +49,16 @@ public class AuthUseCaseConfig {
       PasswordHasher passwordHasher,
       RefreshTokenHasher refreshTokenHasher,
       TokenProvider tokenProvider,
-      UserReader userReader) {
+      UserReader userReader,
+      Clock clock) {
     return new LoginUseCase(
         authIdentityRepository,
         authSessionRepository,
         passwordHasher,
         refreshTokenHasher,
         tokenProvider,
-        userReader);
+        userReader,
+        clock);
   }
 
   @Bean
@@ -55,8 +66,17 @@ public class AuthUseCaseConfig {
       AuthSessionRepository authSessionRepository,
       RefreshTokenHasher refreshTokenHasher,
       TokenProvider tokenProvider,
-      UserReader userReader) {
+      UserReader userReader,
+      Clock clock) {
     return new RefreshTokenUseCase(
-        authSessionRepository, refreshTokenHasher, tokenProvider, userReader);
+        authSessionRepository, refreshTokenHasher, tokenProvider, userReader, clock);
+  }
+
+  @Bean
+  LogoutUseCase logoutUseCase(
+      AuthSessionRepository authSessionRepository,
+      RefreshTokenHasher refreshTokenHasher,
+      Clock clock) {
+    return new LogoutUseCase(authSessionRepository, refreshTokenHasher, clock);
   }
 }
