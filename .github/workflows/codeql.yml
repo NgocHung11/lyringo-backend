@@ -3,6 +3,12 @@ name: CodeQL
 on:
   push:
     branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - '.editorconfig'
+      - 'LICENSE'
   schedule:
     - cron: '30 2 * * 1'
   workflow_dispatch:
