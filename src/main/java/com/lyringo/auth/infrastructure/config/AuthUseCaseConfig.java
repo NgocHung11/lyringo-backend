@@ -8,9 +8,9 @@ import com.lyringo.auth.application.port.TokenProvider;
 import com.lyringo.auth.application.port.UserCreator;
 import com.lyringo.auth.application.port.UserReader;
 import com.lyringo.auth.application.usecase.LoginUseCase;
+import com.lyringo.auth.application.usecase.LogoutUseCase;
 import com.lyringo.auth.application.usecase.RefreshTokenUseCase;
 import com.lyringo.auth.application.usecase.RegisterUseCase;
-import com.lyringo.auth.application.usecase.LogoutUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
