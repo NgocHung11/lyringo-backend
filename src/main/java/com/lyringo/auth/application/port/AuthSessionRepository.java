@@ -13,5 +13,7 @@ public interface AuthSessionRepository {
 
   Optional<AuthSession> findByRefreshTokenHash(String refreshTokenHash);
 
+  Optional<AuthSession> findByPreviousRefreshTokenHash(String previousRefreshTokenHash);
+
   Optional<AuthSession> findActiveByRefreshTokenHash(String refreshTokenHash, Instant now);
 }

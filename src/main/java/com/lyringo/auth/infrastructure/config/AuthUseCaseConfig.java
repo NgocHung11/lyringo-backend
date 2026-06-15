@@ -10,6 +10,7 @@ import com.lyringo.auth.application.port.UserReader;
 import com.lyringo.auth.application.usecase.LoginUseCase;
 import com.lyringo.auth.application.usecase.RefreshTokenUseCase;
 import com.lyringo.auth.application.usecase.RegisterUseCase;
+import com.lyringo.auth.application.usecase.LogoutUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -58,5 +59,11 @@ public class AuthUseCaseConfig {
       UserReader userReader) {
     return new RefreshTokenUseCase(
         authSessionRepository, refreshTokenHasher, tokenProvider, userReader);
+  }
+
+  @Bean
+  LogoutUseCase logoutUseCase(
+      AuthSessionRepository authSessionRepository, RefreshTokenHasher refreshTokenHasher) {
+    return new LogoutUseCase(authSessionRepository, refreshTokenHasher);
   }
 }

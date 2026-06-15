@@ -1,6 +1,7 @@
 package com.lyringo.auth.interfaceadapter.rest.controller;
 
 import com.lyringo.auth.application.command.LoginCommand;
+import com.lyringo.auth.application.command.LogoutCommand;
 import com.lyringo.auth.application.command.RefreshTokenCommand;
 import com.lyringo.auth.application.command.RegisterCommand;
 import com.lyringo.auth.application.result.AuthResult;
@@ -9,15 +10,18 @@ import com.lyringo.auth.infrastructure.service.TransactionalAuthService;
 import com.lyringo.auth.interfaceadapter.rest.request.LoginRequest;
 import com.lyringo.auth.interfaceadapter.rest.request.RegisterRequest;
 import com.lyringo.auth.interfaceadapter.rest.response.AuthResponse;
+import com.lyringo.shared.infrastructure.security.AuthenticatedUserPrincipal;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.time.Duration;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
@@ -75,6 +79,50 @@ public class AuthController {
     return ResponseEntity.ok(AuthResponse.from(result));
   }
 
+  @PostMapping("/refresh")
+  public ResponseEntity<AuthResponse> refresh(
+      @CookieValue(value = REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshToken,
+      HttpServletResponse httpResponse) {
+    if (refreshToken == null || refreshToken.isBlank()) {
+      throw new InvalidRefreshTokenException();
+    }
+
+    AuthResult result = authService.refresh(new RefreshTokenCommand(refreshToken));
+
+    if (result.refreshToken() != null && !result.refreshToken().isBlank()) {
+      addRefreshTokenCookie(httpResponse, result.refreshToken());
+    }
+
+    return ResponseEntity.ok(AuthResponse.from(result));
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<Void> logout(
+      @CookieValue(value = REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshToken,
+      @AuthenticationPrincipal AuthenticatedUserPrincipal principal,
+      HttpServletResponse httpResponse) {
+    UUID sessionId = principal != null ? principal.sessionId() : null;
+    authService.logout(new LogoutCommand(refreshToken, sessionId));
+
+    ResponseCookie cookie =
+        ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, "")
+            .httpOnly(true)
+            .secure(secureCookie)
+            .sameSite("Lax")
+            .path("/api/v1/auth")
+            .maxAge(Duration.ZERO)
+            .build();
+    httpResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+    return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/csrf")
+  public ResponseEntity<Void> csrf(CsrfToken csrfToken) {
+    csrfToken.getToken();
+    return ResponseEntity.noContent().build();
+  }
+
   private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
     ResponseCookie cookie =
         ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
@@ -100,26 +148,5 @@ public class AuthController {
     }
 
     return request.getRemoteAddr();
-  }
-
-  @GetMapping("/csrf")
-  public ResponseEntity<Void> csrf(CsrfToken csrfToken) {
-    csrfToken.getToken();
-    return ResponseEntity.noContent().build();
-  }
-
-  @PostMapping("/refresh")
-  public ResponseEntity<AuthResponse> refresh(
-      @CookieValue(value = REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshToken,
-      HttpServletResponse httpResponse) {
-    if (refreshToken == null || refreshToken.isBlank()) {
-      throw new InvalidRefreshTokenException();
-    }
-
-    AuthResult result = authService.refresh(new RefreshTokenCommand(refreshToken));
-
-    addRefreshTokenCookie(httpResponse, result.refreshToken());
-
-    return ResponseEntity.ok(AuthResponse.from(result));
   }
 }

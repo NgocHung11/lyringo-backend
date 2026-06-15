@@ -8,10 +8,12 @@ public class AuthSession {
   private final AuthSessionId id;
   private final UserId userId;
   private String refreshTokenHash;
+  private String previousRefreshTokenHash;
   private final String userAgent;
   private final String ipAddress;
   private Instant revokedAt;
   private final Instant expiresAt;
+  private Instant rotatedAt;
   private final Instant createdAt;
   private Instant updatedAt;
 
@@ -19,19 +21,23 @@ public class AuthSession {
       AuthSessionId id,
       UserId userId,
       String refreshTokenHash,
+      String previousRefreshTokenHash,
       String userAgent,
       String ipAddress,
       Instant revokedAt,
       Instant expiresAt,
+      Instant rotatedAt,
       Instant createdAt,
       Instant updatedAt) {
     this.id = id;
     this.userId = userId;
     this.refreshTokenHash = refreshTokenHash;
+    this.previousRefreshTokenHash = previousRefreshTokenHash;
     this.userAgent = userAgent;
     this.ipAddress = ipAddress;
     this.revokedAt = revokedAt;
     this.expiresAt = expiresAt;
+    this.rotatedAt = rotatedAt;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
@@ -40,11 +46,28 @@ public class AuthSession {
       UserId userId, String userAgent, String ipAddress, Instant expiresAt) {
     Instant now = Instant.now();
     return new AuthSession(
-        AuthSessionId.newId(), userId, null, userAgent, ipAddress, null, expiresAt, now, now);
+        AuthSessionId.newId(),
+        userId,
+        null,
+        null,
+        userAgent,
+        ipAddress,
+        null,
+        expiresAt,
+        null,
+        now,
+        now);
   }
 
   public void setRefreshTokenHash(String refreshTokenHash) {
     this.refreshTokenHash = refreshTokenHash;
+    this.updatedAt = Instant.now();
+  }
+
+  public void rotateTo(String newRefreshTokenHash) {
+    this.previousRefreshTokenHash = this.refreshTokenHash;
+    this.refreshTokenHash = newRefreshTokenHash;
+    this.rotatedAt = Instant.now();
     this.updatedAt = Instant.now();
   }
 
@@ -69,6 +92,10 @@ public class AuthSession {
     return refreshTokenHash;
   }
 
+  public String previousRefreshTokenHash() {
+    return previousRefreshTokenHash;
+  }
+
   public String userAgent() {
     return userAgent;
   }
@@ -83,6 +110,10 @@ public class AuthSession {
 
   public Instant expiresAt() {
     return expiresAt;
+  }
+
+  public Instant rotatedAt() {
+    return rotatedAt;
   }
 
   public Instant createdAt() {

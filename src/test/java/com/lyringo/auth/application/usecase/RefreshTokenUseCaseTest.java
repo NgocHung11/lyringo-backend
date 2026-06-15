@@ -18,6 +18,7 @@ import com.lyringo.auth.application.port.TokenPair;
 import com.lyringo.auth.application.port.TokenProvider;
 import com.lyringo.auth.application.port.UserReader;
 import com.lyringo.auth.application.result.AuthResult;
+import com.lyringo.auth.domain.exception.InvalidRefreshTokenException;
 import com.lyringo.auth.domain.model.AuthSession;
 import com.lyringo.auth.domain.valueobject.AuthSessionId;
 import com.lyringo.shared.domain.valueobject.UserId;
@@ -96,15 +97,91 @@ class RefreshTokenUseCaseTest {
     verify(authSessionRepository, never()).save(session);
   }
 
+  @Test
+  void shouldReturnNewAccessTokenAndNullRefreshTokenWithinGracePeriod() {
+    UserId userId = UserId.newId();
+    AuthSession session =
+        new AuthSession(
+            AuthSessionId.newId(),
+            userId,
+            "new-refresh-hash",
+            "previous-refresh-hash",
+            "JUnit",
+            "127.0.0.1",
+            null,
+            FIXED_NOW.plusSeconds(300),
+            FIXED_NOW.minusSeconds(10), // rotated 10s ago (within 30s grace)
+            FIXED_NOW.minusSeconds(60),
+            FIXED_NOW.minusSeconds(60));
+
+    CreatedUser user =
+        new CreatedUser(
+            userId.value().toString(),
+            "lexi@example.com",
+            "lexi",
+            "Lexi",
+            "https://cdn.example.com/lexi.png",
+            "USER");
+
+    when(refreshTokenHasher.hash("incoming-refresh-token")).thenReturn("previous-refresh-hash");
+    when(authSessionRepository.findByPreviousRefreshTokenHash("previous-refresh-hash"))
+        .thenReturn(Optional.of(session));
+    when(userReader.getUserById(userId)).thenReturn(user);
+    when(tokenProvider.issueTokens(userId, session.id()))
+        .thenReturn(new TokenPair("new-access-token", "not-returned-refresh-token"));
+
+    AuthResult result =
+        refreshTokenUseCase.execute(new RefreshTokenCommand("incoming-refresh-token"));
+
+    assertThat(result.accessToken()).isEqualTo("new-access-token");
+    assertThat(result.refreshToken()).isNull();
+    assertThat(result.user().id()).isEqualTo(userId.value().toString());
+    // Ensure session properties are not modified
+    assertThat(session.refreshTokenHash()).isEqualTo("new-refresh-hash");
+    verify(authSessionRepository, never()).save(session);
+  }
+
+  @Test
+  void shouldRevokeSessionAndThrowExceptionOnReuseOutsideGracePeriod() {
+    UserId userId = UserId.newId();
+    AuthSession session =
+        new AuthSession(
+            AuthSessionId.newId(),
+            userId,
+            "new-refresh-hash",
+            "previous-refresh-hash",
+            "JUnit",
+            "127.0.0.1",
+            null,
+            FIXED_NOW.plusSeconds(300),
+            FIXED_NOW.minusSeconds(35), // rotated 35s ago (outside grace period)
+            FIXED_NOW.minusSeconds(60),
+            FIXED_NOW.minusSeconds(60));
+
+    when(refreshTokenHasher.hash("incoming-refresh-token")).thenReturn("previous-refresh-hash");
+    when(authSessionRepository.findByPreviousRefreshTokenHash("previous-refresh-hash"))
+        .thenReturn(Optional.of(session));
+
+    assertThatThrownBy(
+            () -> refreshTokenUseCase.execute(new RefreshTokenCommand("incoming-refresh-token")))
+        .isInstanceOf(InvalidRefreshTokenException.class);
+
+    assertThat(session.revokedAt()).isNotNull();
+    verify(authSessionRepository).save(session);
+    verify(tokenProvider, never()).issueTokens(any(), any());
+  }
+
   private AuthSession activeSession(UserId userId) {
     return new AuthSession(
         AuthSessionId.newId(),
         userId,
         "existing-refresh-hash",
+        null,
         "JUnit",
         "127.0.0.1",
         null,
         FIXED_NOW.plusSeconds(300),
+        null,
         FIXED_NOW.minusSeconds(60),
         FIXED_NOW.minusSeconds(60));
   }

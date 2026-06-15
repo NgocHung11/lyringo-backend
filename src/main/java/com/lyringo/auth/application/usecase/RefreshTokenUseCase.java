@@ -12,6 +12,7 @@ import com.lyringo.auth.application.result.AuthResult;
 import com.lyringo.auth.domain.exception.InvalidRefreshTokenException;
 import com.lyringo.auth.domain.model.AuthSession;
 import java.time.Instant;
+import java.util.Optional;
 
 public class RefreshTokenUseCase {
 
@@ -38,18 +39,48 @@ public class RefreshTokenUseCase {
 
     String refreshTokenHash = refreshTokenHasher.hash(command.refreshToken());
 
-    AuthSession session =
-        authSessionRepository
-            .findActiveByRefreshTokenHash(refreshTokenHash, Instant.now())
-            .orElseThrow(InvalidRefreshTokenException::new);
+    // 1. Try to find by active current refresh token hash
+    Optional<AuthSession> activeSessionOpt =
+        authSessionRepository.findActiveByRefreshTokenHash(refreshTokenHash, Instant.now());
 
-    CreatedUser user = userReader.getUserById(session.userId());
+    if (activeSessionOpt.isPresent()) {
+      AuthSession session = activeSessionOpt.get();
+      CreatedUser user = userReader.getUserById(session.userId());
 
-    TokenPair tokenPair = tokenProvider.issueTokens(session.userId(), session.id());
-    session.setRefreshTokenHash(refreshTokenHasher.hash(tokenPair.refreshToken()));
-    authSessionRepository.save(session);
+      TokenPair tokenPair = tokenProvider.issueTokens(session.userId(), session.id());
+      session.rotateTo(refreshTokenHasher.hash(tokenPair.refreshToken()));
+      authSessionRepository.save(session);
 
-    return buildTokenRotationResult(user, tokenPair);
+      return buildTokenRotationResult(user, tokenPair);
+    }
+
+    // 2. If not found, check if it matches a previous token (rotated recently)
+    Optional<AuthSession> rotatedSessionOpt =
+        authSessionRepository.findByPreviousRefreshTokenHash(refreshTokenHash);
+
+    if (rotatedSessionOpt.isPresent()) {
+      AuthSession session = rotatedSessionOpt.get();
+      Instant now = Instant.now();
+
+      // Grace Period: 30 seconds
+      if (session.isActive(now)
+          && session.rotatedAt() != null
+          && now.isBefore(session.rotatedAt().plusSeconds(30))) {
+
+        CreatedUser user = userReader.getUserById(session.userId());
+        TokenPair tokenPair = tokenProvider.issueTokens(session.userId(), session.id());
+
+        // Return new access token, but do not return a new refresh token (do not rotate again)
+        return buildTokenRotationResult(user, new TokenPair(tokenPair.accessToken(), null));
+      } else {
+        // Reuse Attack: Revoke session immediately
+        session.revoke();
+        authSessionRepository.save(session);
+        throw new InvalidRefreshTokenException();
+      }
+    }
+
+    throw new InvalidRefreshTokenException();
   }
 
   private AuthResult buildTokenRotationResult(CreatedUser user, TokenPair tokenPair) {
