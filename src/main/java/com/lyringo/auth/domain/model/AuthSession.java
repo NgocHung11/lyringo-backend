@@ -43,8 +43,7 @@ public class AuthSession {
   }
 
   public static AuthSession create(
-      UserId userId, String userAgent, String ipAddress, Instant expiresAt) {
-    Instant now = Instant.now();
+      UserId userId, String userAgent, String ipAddress, Instant expiresAt, Instant now) {
     return new AuthSession(
         AuthSessionId.newId(),
         userId,
@@ -59,21 +58,21 @@ public class AuthSession {
         now);
   }
 
-  public void setRefreshTokenHash(String refreshTokenHash) {
+  public void setRefreshTokenHash(String refreshTokenHash, Instant now) {
     this.refreshTokenHash = refreshTokenHash;
-    this.updatedAt = Instant.now();
+    this.updatedAt = now;
   }
 
-  public void rotateTo(String newRefreshTokenHash) {
+  public void rotateTo(String newRefreshTokenHash, Instant now) {
     this.previousRefreshTokenHash = this.refreshTokenHash;
     this.refreshTokenHash = newRefreshTokenHash;
-    this.rotatedAt = Instant.now();
-    this.updatedAt = Instant.now();
+    this.rotatedAt = now;
+    this.updatedAt = now;
   }
 
-  public void revoke() {
-    this.revokedAt = Instant.now();
-    this.updatedAt = Instant.now();
+  public void revoke(Instant now) {
+    this.revokedAt = now;
+    this.updatedAt = now;
   }
 
   public boolean isActive(Instant now) {

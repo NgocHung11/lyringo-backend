@@ -22,7 +22,9 @@ import com.lyringo.auth.domain.exception.InvalidRefreshTokenException;
 import com.lyringo.auth.domain.model.AuthSession;
 import com.lyringo.auth.domain.valueobject.AuthSessionId;
 import com.lyringo.shared.domain.valueobject.UserId;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
@@ -30,6 +32,7 @@ import org.mockito.InOrder;
 class RefreshTokenUseCaseTest {
 
   private static final Instant FIXED_NOW = Instant.parse("2026-01-01T00:00:00Z");
+  private final Clock clock = Clock.fixed(FIXED_NOW, ZoneOffset.UTC);
 
   private final AuthSessionRepository authSessionRepository = mock(AuthSessionRepository.class);
   private final RefreshTokenHasher refreshTokenHasher = mock(RefreshTokenHasher.class);
@@ -37,7 +40,8 @@ class RefreshTokenUseCaseTest {
   private final UserReader userReader = mock(UserReader.class);
 
   private final RefreshTokenUseCase refreshTokenUseCase =
-      new RefreshTokenUseCase(authSessionRepository, refreshTokenHasher, tokenProvider, userReader);
+      new RefreshTokenUseCase(
+          authSessionRepository, refreshTokenHasher, tokenProvider, userReader, clock);
 
   @Test
   void shouldResolveUserBeforeIssuingRotatedTokens() {
@@ -100,7 +104,7 @@ class RefreshTokenUseCaseTest {
   @Test
   void shouldReturnNewAccessTokenAndNullRefreshTokenWithinGracePeriod() {
     UserId userId = UserId.newId();
-    Instant realNow = Instant.now();
+    Instant realNow = FIXED_NOW;
     AuthSession session =
         new AuthSession(
             AuthSessionId.newId(),
@@ -145,7 +149,7 @@ class RefreshTokenUseCaseTest {
   @Test
   void shouldRevokeSessionAndThrowExceptionOnReuseOutsideGracePeriod() {
     UserId userId = UserId.newId();
-    Instant realNow = Instant.now();
+    Instant realNow = FIXED_NOW;
     AuthSession session =
         new AuthSession(
             AuthSessionId.newId(),

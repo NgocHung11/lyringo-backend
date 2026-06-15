@@ -13,18 +13,23 @@ import com.lyringo.auth.application.port.RefreshTokenHasher;
 import com.lyringo.auth.domain.model.AuthSession;
 import com.lyringo.auth.domain.valueobject.AuthSessionId;
 import com.lyringo.shared.domain.valueobject.UserId;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class LogoutUseCaseTest {
 
+  private static final Instant FIXED_NOW = Instant.parse("2026-01-01T00:00:00Z");
+  private final Clock clock = Clock.fixed(FIXED_NOW, ZoneOffset.UTC);
+
   private final AuthSessionRepository authSessionRepository = mock(AuthSessionRepository.class);
   private final RefreshTokenHasher refreshTokenHasher = mock(RefreshTokenHasher.class);
 
   private final LogoutUseCase logoutUseCase =
-      new LogoutUseCase(authSessionRepository, refreshTokenHasher);
+      new LogoutUseCase(authSessionRepository, refreshTokenHasher, clock);
 
   @Test
   void shouldRevokeSessionByRefreshToken() {
@@ -67,7 +72,7 @@ class LogoutUseCaseTest {
   }
 
   private AuthSession activeSession(UserId userId) {
-    Instant now = Instant.now();
+    Instant now = FIXED_NOW;
     return new AuthSession(
         AuthSessionId.newId(),
         userId,

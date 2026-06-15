@@ -16,6 +16,7 @@ import com.lyringo.auth.domain.model.AuthIdentity;
 import com.lyringo.auth.domain.model.AuthSession;
 import com.lyringo.shared.domain.valueobject.Email;
 import com.lyringo.shared.domain.valueobject.UserId;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
@@ -27,6 +28,7 @@ public class RegisterUseCase {
   private final RefreshTokenHasher refreshTokenHasher;
   private final TokenProvider tokenProvider;
   private final UserCreator userCreator;
+  private final Clock clock;
 
   public RegisterUseCase(
       AuthIdentityRepository authIdentityRepository,
@@ -34,13 +36,15 @@ public class RegisterUseCase {
       PasswordHasher passwordHasher,
       RefreshTokenHasher refreshTokenHasher,
       TokenProvider tokenProvider,
-      UserCreator userCreator) {
+      UserCreator userCreator,
+      Clock clock) {
     this.authIdentityRepository = authIdentityRepository;
     this.authSessionRepository = authSessionRepository;
     this.passwordHasher = passwordHasher;
     this.refreshTokenHasher = refreshTokenHasher;
     this.tokenProvider = tokenProvider;
     this.userCreator = userCreator;
+    this.clock = clock;
   }
 
   public AuthResult execute(RegisterCommand command) {
@@ -59,16 +63,14 @@ public class RegisterUseCase {
         AuthIdentity.emailPassword(userId, email, passwordHasher.hash(command.password()));
     authIdentityRepository.save(identity);
 
+    Instant now = Instant.now(clock);
     AuthSession session =
         AuthSession.create(
-            userId,
-            command.userAgent(),
-            command.ipAddress(),
-            Instant.now().plus(Duration.ofDays(30)));
+            userId, command.userAgent(), command.ipAddress(), now.plus(Duration.ofDays(30)), now);
     authSessionRepository.save(session);
 
     TokenPair tokenPair = tokenProvider.issueTokens(userId, session.id());
-    session.setRefreshTokenHash(refreshTokenHasher.hash(tokenPair.refreshToken()));
+    session.setRefreshTokenHash(refreshTokenHasher.hash(tokenPair.refreshToken()), now);
     authSessionRepository.save(session);
 
     return new AuthResult(

@@ -11,6 +11,7 @@ import com.lyringo.auth.application.port.UserReader;
 import com.lyringo.auth.application.result.AuthResult;
 import com.lyringo.auth.domain.exception.InvalidRefreshTokenException;
 import com.lyringo.auth.domain.model.AuthSession;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -20,16 +21,19 @@ public class RefreshTokenUseCase {
   private final RefreshTokenHasher refreshTokenHasher;
   private final TokenProvider tokenProvider;
   private final UserReader userReader;
+  private final Clock clock;
 
   public RefreshTokenUseCase(
       AuthSessionRepository authSessionRepository,
       RefreshTokenHasher refreshTokenHasher,
       TokenProvider tokenProvider,
-      UserReader userReader) {
+      UserReader userReader,
+      Clock clock) {
     this.authSessionRepository = authSessionRepository;
     this.refreshTokenHasher = refreshTokenHasher;
     this.tokenProvider = tokenProvider;
     this.userReader = userReader;
+    this.clock = clock;
   }
 
   public AuthResult execute(RefreshTokenCommand command) {
@@ -38,17 +42,18 @@ public class RefreshTokenUseCase {
     }
 
     String refreshTokenHash = refreshTokenHasher.hash(command.refreshToken());
+    Instant now = Instant.now(clock);
 
     // 1. Try to find by active current refresh token hash
     Optional<AuthSession> activeSessionOpt =
-        authSessionRepository.findActiveByRefreshTokenHash(refreshTokenHash, Instant.now());
+        authSessionRepository.findActiveByRefreshTokenHash(refreshTokenHash, now);
 
     if (activeSessionOpt.isPresent()) {
       AuthSession session = activeSessionOpt.get();
       CreatedUser user = userReader.getUserById(session.userId());
 
       TokenPair tokenPair = tokenProvider.issueTokens(session.userId(), session.id());
-      session.rotateTo(refreshTokenHasher.hash(tokenPair.refreshToken()));
+      session.rotateTo(refreshTokenHasher.hash(tokenPair.refreshToken()), now);
       authSessionRepository.save(session);
 
       return buildTokenRotationResult(user, tokenPair);
@@ -60,7 +65,6 @@ public class RefreshTokenUseCase {
 
     if (rotatedSessionOpt.isPresent()) {
       AuthSession session = rotatedSessionOpt.get();
-      Instant now = Instant.now();
 
       // Grace Period: 30 seconds
       if (session.isActive(now)
@@ -74,7 +78,7 @@ public class RefreshTokenUseCase {
         return buildTokenRotationResult(user, new TokenPair(tokenPair.accessToken(), null));
       } else {
         // Reuse Attack: Revoke session immediately
-        session.revoke();
+        session.revoke(now);
         authSessionRepository.save(session);
         throw new InvalidRefreshTokenException();
       }
